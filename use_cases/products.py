@@ -1,3 +1,4 @@
+import pickle
 import time
 from bs4 import BeautifulSoup
 import requests
@@ -103,15 +104,32 @@ def send_new_products() -> None:
             time.sleep(60)
 
 
+def save_state(offset):
+    with open('bot_state.pkl', 'wb') as f:
+        pickle.dump(offset, f)
+
+
+def load_state():
+    try:
+        with open('bot_state.pkl', 'rb') as f:
+            offset = pickle.load(f)
+        return offset
+    except FileNotFoundError:
+        return None
+
+
 def send_old_products() -> None:
     info = InfoOfGoods()
+    offset = load_state()
     limit = 20
-    offset = info.get_total_number_of_products() - limit
+    if offset is None:
+        offset = info.get_total_number_of_products() - limit
 
     while offset >= 0:
         # Получаем следующие 20 товаров, начиная с конца списка
         catalogue_products = info.get_catalogue_products(offset, limit)
 
+        cnt = 0
         # Отправляем или обрабатываем товары здесь
         for product in catalogue_products:
             try:
@@ -122,10 +140,13 @@ def send_old_products() -> None:
                 send_product_to_public_vk(**info_)
             except vk_api.exceptions.ApiError:
                 pass
+            cnt += 1
             send_product_to_channel(**info_)
-            time.sleep(60 * 30)
+            # if cnt % 5 == 0:
+            #     time.sleep(60 * 30)
 
         offset -= limit  # Move to the next batch of products
+        save_state(offset)  # Сохраняем текущее состояние
 
         if offset < 0:
             break  # Exit the loop when there are no more products to process
