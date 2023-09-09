@@ -3,10 +3,10 @@ from io import BytesIO
 from requests import get
 from typing import TypeAlias
 
-ImagePath: TypeAlias = str
+ImageBytes: TypeAlias = BytesIO
 
 
-def get_image_with_logo(product_image_url: str) -> ImagePath:
+def get_image_with_logo(product_image_url: str) -> ImageBytes:
     bio = BytesIO()
     # # Загрузите изображения
     response = get(product_image_url)
