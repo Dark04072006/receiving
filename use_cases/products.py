@@ -142,8 +142,8 @@ def send_old_products() -> None:
                 pass
             cnt += 1
             send_product_to_channel(**info_)
-            # if cnt % 5 == 0:
-            #     time.sleep(60 * 30)
+            if cnt % 5 == 0:
+                time.sleep(60 * 30)
 
         offset -= limit  # Move to the next batch of products
         save_state(offset)  # Сохраняем текущее состояние
